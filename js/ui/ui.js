@@ -109,7 +109,7 @@
   UI.sideCanvas = function (look, a, team, w, hgt) {
     const id = 'cv' + Math.floor(Math.random() * 1e9);
     UI.job(() => { const c = document.getElementById(id); if (c) G.Render.robotSide(c.getContext('2d'), c.width, c.height, look, a, team); });
-    return '<canvas id="' + id + '" class="side" width="' + (w || 360) + '" height="' + (hgt || 220) + '"></canvas>';
+    return '<canvas id="' + id + '" class="side" width="' + (w || 360) * 2 + '" height="' + (hgt || 220) * 2 + '"></canvas>'; // (3.5.5) drawn at twice the size, so the detail stays sharp
   };
   UI.topCanvas = function (look, a, team, held, year, size) {
     const id = 'tv' + Math.floor(Math.random() * 1e9), sz = size || 120;
@@ -120,6 +120,54 @@
     });
     return '<canvas id="' + id + '" width="' + sz + '" height="' + sz + '" style="border-radius:8px;border:1px solid var(--line)"></canvas>';
   };
+
+  // (3.5.5) The robot's look (Garage): any colour for the robot and its accent (the team's colour on the pages stays as
+  // it is), red or blue bumpers in the pictures, and the robot from above showing its moves on a button, as in the
+  // robot viewer. With a camera, before AprilTags, the green aiming light can be switched on
+  UI.lookCard = function (S) {
+    const R = S.robot; if (!R || !R.bots) return '';
+    const ci = R.comp || 0, b = R.bots[ci]; if (!Object.keys(b.subs).some(k => k !== 'soft' && b.subs[k] && b.subs[k].ver)) return '';
+    const t = S.team, lk = G.Robot.lookOf(S, ci), id = 'lp' + Math.floor(Math.random() * 1e9), a = t.bump === 'red' ? 'red' : 'blue', own = !!(t.rc1 || t.rc2);
+    const green = (R.visionLvl || 0) >= 1 && !(G.Era && G.Era.of(S).vision.tags), hex = c => (/^#[0-9a-f]{6}$/i.test(c || '') ? c : '#888888');
+    UI.job(() => UI.lookRun(id, lk, a, t.num, R.year, green));
+    return '<div class="mb">' + UI.card('Robot look ' + UI.q('garage', 'Robot look'), '<div class="lookrow"><div class="lookside">' + UI.sideCanvas(lk, a, t.num, 340, 180) + '</div><canvas id="' + id + '" class="lookcv" width="520" height="400"></canvas><div class="lookctl">' +
+      '<label class="sm">Robot colour <input type="color" data-chg="robotCol" data-k="rc1" value="' + hex(lk.c1) + '"></label>' +
+      '<label class="sm">Accent <input type="color" data-chg="robotCol" data-k="rc2" value="' + hex(lk.c2) + '"></label>' +
+      '<div class="row gap4"><span class="sm muted">Bumpers</span><button class="btn sm' + (a === 'blue' ? ' primary' : '') + '" data-act="bumpCol" data-arg="blue">Blue</button><button class="btn sm' + (a === 'red' ? ' primary' : '') + '" data-act="bumpCol" data-arg="red">Red</button></div>' +
+      '<div class="row gap4"><span class="sm muted">Number</span><button class="btn sm' + (t.numAt === 'side' ? '' : ' primary') + '" data-act="numAt" data-arg="mid">Middle</button><button class="btn sm' + (t.numAt === 'side' ? ' primary' : '') + '" data-act="numAt" data-arg="side">Side</button></div>' +
+      (green ? '<label class="sm" title="Before AprilTags a robot with vision lights a green ring to find the reflective tape while it aims"><input type="checkbox" data-chg="lookGreen"' + (UI.st.lookGreen ? ' checked' : '') + '> Green aiming light</label>' : '') +
+      '<div class="row gap4"><button class="btn sm" data-act="lookPlay" data-arg="' + id + '">Play its moves</button>' + (own ? '<button class="btn sm" data-act="robotColReset" title="Back to the team\'s colours">Team colours</button>' : '') + '</div>' +
+      (lk.ver < 2 ? '<div class="xs muted">The colour shows from Version 2 of a unit.</div>' : '') + '</div></div>') + '</div>';
+  };
+  UI.lookRun = function (id, lk, a, team, year, green) {
+    const cv = document.getElementById(id); if (!cv) return;
+    const ctx = cv.getContext('2d'), W = cv.width, H = cv.height, s = 290, st = { vi: 1, vx: 0, vc: 0, held: 0, t: 0, on: false, score: false }, store = lk.hopper || 1;
+    const draw = () => {
+      ctx.fillStyle = '#272d34'; ctx.fillRect(0, 0, W, H); ctx.strokeStyle = 'rgba(255,255,255,0.05)'; ctx.lineWidth = 1;
+      for (let x = (W / 2) % (s / 2); x < W; x += s / 2) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); } for (let y = (H / 2) % (s / 2); y < H; y += s / 2) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+      G.Render.robot(ctx, s, { x: W / 2 / s, y: H / 2 / s, hd: 0, look: lk, a, team, isPlayer: true, held: st.held ? (lk.hopper ? Math.round(lk.hopper * 0.6) : 1) : 0, heldType: G.Render.demoPiece[year], year, cap: { storage: store }, vi: st.vi, vx: st.vx, vc: st.vc },
+        { year, aim: st.on ? -0.45 : 0, noLabel: true, rsl: st.on ? 'blink' : 'on', rslLit: Math.floor(performance.now() / 450) % 2 === 0, aimLight: green && (UI.st.lookGreen || (st.on && st.score)) });
+    };
+    draw();
+    cv._play = btn => {
+      st.on = !st.on; if (btn) btn.textContent = st.on ? 'Stop' : 'Play its moves';
+      if (!st.on) { st.vi = 1; st.vx = 0; st.vc = 0; st.held = 0; st.t = 0; draw(); return; }
+      let last = performance.now();
+      const step = now => {
+        if (!st.on || !document.body.contains(cv)) return;
+        const dt = Math.min(0.1, (now - last) / 1000), p = G.Render.demoPhase(st.t = (st.t + dt) % 12), e = (v, to, rate) => v + (to - v) * (1 - Math.exp(-rate * dt)); last = now;
+        st.vi = e(st.vi, !p.carry && !p.climb ? 1 : 0, 8); st.vx = e(st.vx, p.score ? 1 : 0, 9); st.vc = e(st.vc, p.climb ? 1 : 0, 3); st.held = p.carry ? 1 : 0; st.score = p.score;
+        draw(); requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+    };
+  };
+  UI.A.lookPlay = (id, el) => { const cv = document.getElementById(id); if (cv && cv._play) cv._play(el); };
+  UI.A.robotCol = (v, el) => { if (!/^#[0-9a-f]{6}$/i.test(v || '')) return; G.S.team[el.dataset.k === 'rc2' ? 'rc2' : 'rc1'] = v; G.Save.write('auto'); UI.render(); };
+  UI.A.robotColReset = () => { delete G.S.team.rc1; delete G.S.team.rc2; G.Save.write('auto'); UI.render(); };
+  UI.A.bumpCol = v => { G.S.team.bump = v === 'red' ? 'red' : 'blue'; G.Save.write('auto'); UI.render(); };
+  UI.A.lookGreen = v => { UI.st.lookGreen = !!v; UI.render(); };
+  UI.A.numAt = v => { if (v === 'side') G.S.team.numAt = 'side'; else delete G.S.team.numAt; G.Save.write('auto'); UI.render(); };   // where the team number sits on the bumper in side views
 
   // ---------------- chrome ----------------
   function topbar() {
@@ -629,7 +677,7 @@
       const more = '<h4>' + h(S.robot.nick || 'The competition robot') + '</h4>' + UI.stat('Speed', cap.speed) + UI.stat('Scoring', (cap.scoreSpd + cap.accuracy) / 2) + UI.stat('Intake', cap.intake) + UI.stat('Endgame', cap.endgame) + UI.stat('Reliability', cap.rel, null, UI.colorFor(cap.rel)) +
         '<div class="xs muted mt">Weight ' + w + ' / 125 lb · Auto v' + (S.robot.autoTier + 1) + ': ' + h(G.Seasons[S.robot.year].autoTiers[S.robot.autoTier]) + ' · Vision Lv ' + S.robot.visionLvl + '</div>';
       o += UI.tile({ title: 'Robot', icon: 'garage', extra: UI.tag(S.robot.year + (off ? ' (last season)' : ''), off ? '' : 'acc'), act: 'nav', arg: 'garage', hov: more,
-        body: UI.sideCanvas(G.Robot.look(S), 'blue', S.team.num, 360, 170) + '<div class="row mt"><span class="big">' + G.Cap.power(S.robot.year, cap) + '</span><span class="xs muted">power</span></div>' + UI.stat('Reliability', cap.rel, null, UI.colorFor(cap.rel)) + (off ? '' : UI.stratRow(S)) });
+        body: UI.sideCanvas(G.Robot.look(S), S.team.bump || 'blue', S.team.num, 360, 170) + '<div class="row mt"><span class="big">' + G.Cap.power(S.robot.year, cap) + '</span><span class="xs muted">power</span></div>' + UI.stat('Reliability', cap.rel, null, UI.colorFor(cap.rel)) + (off ? '' : UI.stratRow(S)) });
     } else o += UI.tile({ title: 'Robot', icon: 'garage', act: 'nav', arg: 'design', body: '<p class="muted">No robot yet. The game is revealed at Kickoff in January. Until then, start pre-season research in the Design Office.</p>' });
     // projects
     { const hp = C.hoursPlan(S), sg = G.Robot.suggest(S), tot = C.turnHours(S, C.isEventTurn(S), true).total;
@@ -797,6 +845,7 @@
       UI.more([bi !== ci && R.year === S.year && S.phase !== 'off' ? ['openWin', 'second:' + bi, 'Test chassis and full copy…'] : null, ['nav', 'design', 'Design Office'], ['nav', 'parts', 'Inventory: robot parts']]) + '</div>';
     o += '<div class="grid g21 top"><div class="card">' + (any ? UI.exploded(S, bi) : '<div class="botimg empty">' + UI.icon('garage', 36) + '<div class="sm muted">Empty chassis. Build units (Design Office: Build copy) or fit stored ones' + (bi !== ci ? ', or give it a test chassis (⋯)' : '') + '.</div></div>') +
       '<div class="unitchips">' + G.Seasons[year].subs.map(sd => unitChip(S, bi, sd.id)).join('') + '</div></div>' + robotSummary(S, bi) + '</div>';
+    o += UI.lookCard(S); // (3.5.5) the robot's own colours, bumpers and its moves from above
     return o;
   } };
   UI.A.garTab = t => { UI.st.garTab = t; UI.render(); };
@@ -1744,7 +1793,7 @@
     const S = G.S, C = G.Career;
     let o = UI.head('Finance', 'finance', 'Budget ' + U.money(S.money) + ' · sponsors pay at Kickoff each season · bonuses when goals are met.', 'money');
     // (3.6) tabs: the overview, the sponsors and their offers, the ledger
-    const slots0 = C.sponsorSlots(S), waiting = ['title', 'partner', 'grant'].some(k => slots0[k].n < slots0[k].max && S.offers.some(of => of.slot === k));
+    const slots0 = C.sponsorSlots(S), waiting = S.offers.some(of => of.renew) || ['title', 'partner', 'grant'].some(k => slots0[k].n < slots0[k].max && S.offers.some(of => of.slot === k)); // (3.5.5b) a renewal offer counts even when every slot is taken
     const fTab = ['overview', 'sponsors', 'ledger'].includes(UI.st.finTab) ? UI.st.finTab : waiting ? 'sponsors' : 'overview';
     o += UI.tabs(fTab, [['overview', 'Overview', 'finance'], ['sponsors', 'Sponsors · ' + S.sponsors.length + (S.offers.length ? ' · ' + S.offers.length + ' offer' + (S.offers.length > 1 ? 's' : '') : ''), 'sponsor'], ['ledger', 'Ledger', 'money']], 'finTab');
     const sf = C.stemFundInfo(S);

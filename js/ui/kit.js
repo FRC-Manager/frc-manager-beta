@@ -134,26 +134,19 @@
   // One transparent layer per unit, drawn by the side view with only that unit's sections; the layers spread upward so
   // nothing overlaps (with a short animation), each with a label. Hovering a layer shows its card, clicking it opens the
   // unit's window (UI.W.unit). The drivetrain is the base; the robot code is the camera (with vision).
-  const SECTION = { drive: 'base', frame: 'base', manip: 'manip', shooter: 'shooter', hopper: 'hopper', indexer: 'indexer', intake: 'intake', climber: 'climber', algae: 'algae' };
+  // (3.5.5b) the side view draws by subsystem, so a unit's layer is its own subsystem; the robot code is its cameras
   UI.unitSections = function (S, bi, k) {
     const R = S.robot, u = R.bots[bi].subs[k];
-    if (k === 'soft') return R.visionLvl ? ['vision'] : [];
-    if (!u || !u.ver) return [];
-    const c = G.Seasons.concept(R.year, k, u.concept), lk = (c && c.look) || {}, out = [];
-    Object.keys(lk).forEach(key => {
-      let sec = SECTION[key];
-      if (key === 'eff') { const iu = R.bots[bi].subs.intake; if (!iu || !iu.ver || iu.concept === 'none') sec = 'intake'; } // an end effector shows as the intake when there is none
-      if (sec && !out.includes(sec)) out.push(sec);
-    });
-    if (k === 'drive' && !out.includes('base')) out.push('base');
-    return out;
+    if (k === 'soft') return R.visionLvl ? ['soft'] : [];
+    return u && u.ver ? [k] : [];
   };
   UI.exploded = function (S, bi, opts) {
     const R = S.robot, year = R.year, look = G.Robot.lookOf(S, bi), id = 'xp' + Math.floor(Math.random() * 1e9), W = 520, H = 300;
     const subs = G.Seasons[year].subs.map(sd => sd.id), taken = {};
     const layers = [];
     subs.forEach(k => { const secs = UI.unitSections(S, bi, k).filter(x => !taken[x]); secs.forEach(x => { taken[x] = 1; }); if (secs.length) layers.push({ k, secs }); });
-    if (!layers.some(l => l.k === 'drive')) layers.unshift({ k: 'drive', secs: ['base'], empty: true });
+    // (3.5.5b) the base is the last layer, so it lies on top: the bumpers cover the feet of what stands behind them
+    { const i = layers.findIndex(l => l.k === 'drive'), base = i >= 0 ? layers.splice(i, 1)[0] : { k: 'drive', secs: ['drive'], empty: true }; layers.push(base); }
     const name = k => (k === 'soft' ? 'Robot code' : G.Seasons.sub(year, k).name);
     UI.job(() => {
       const box = document.getElementById(id); if (!box) return;
@@ -161,16 +154,16 @@
       // draw each layer, then find what it covers
       const boxes = cvs.map((cv, i) => {
         const L = layers[i], ctx = cv.getContext('2d');
-        G.Render.robotSide(ctx, W, H, look, 'blue', S.team.num, { only: L.secs });
+        G.Render.robotSide(ctx, W, H, look, S.team.bump || 'blue', S.team.num, { only: L.secs });
         const d = ctx.getImageData(0, 0, W, H).data; let x0 = W, y0 = H, x1 = -1, y1 = -1;
         for (let y = 0; y < H; y += 2) for (let x = 0; x < W; x += 2) if (d[(y * W + x) * 4 + 3] > 24) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
         return x1 < 0 ? null : { x0, y0, x1, y1 };
       });
       // spread: the base stays, the others rise in order of how low they sit, each clear of the one below it
       const order = layers.map((L, i) => i).filter(i => boxes[i] && layers[i].k !== 'drive').sort((a, b) => boxes[b].y1 - boxes[a].y1);
-      let ceiling = boxes[0] ? boxes[0].y0 : H; const lift = layers.map(() => 0);
-      order.forEach(i => { const b = boxes[i], gap = 14; lift[i] = Math.max(0, b.y1 - (ceiling - gap)); ceiling = b.y0 - lift[i]; });
-      const extra = Math.max(0, -Math.min(0, ceiling - 10)), fit = Math.min(1, (opts && opts.maxH || 430) / (H + extra));
+      const b0 = boxes[layers.length - 1]; let ceiling = b0 ? b0.y0 : H; const lift = layers.map(() => 0);
+      order.forEach(i => { const b = boxes[i], gap = 8; lift[i] = Math.max(0, b.y1 - (ceiling - gap)); ceiling = b.y0 - lift[i]; });
+      const extra = Math.max(0, -Math.min(0, ceiling - 10)), fit = Math.min(1, (opts && opts.maxH || 620) / (H + extra)); // (3.5.5b) the new drawings stand taller: more room, so the robot stays large
       box.style.setProperty('--xh', H + extra); box.style.setProperty('--xtop', extra); box.style.setProperty('--xw', Math.round(W * fit)); // a tall robot is drawn smaller
       cvs.forEach((cv, i) => { cv.style.setProperty('--lift', -lift[i]); });
       // labels at the right of each layer, with a line to it (in drawing pixels; --xs scales them with the drawing)

@@ -261,7 +261,24 @@
   // =====================================================================
   // Newest first. Keep G.VERSION (core.js) equal to the first entry.
   G.RELEASES = [
-    { v: '3.6', title: 'A new interface (beta)', notes: [
+    { v: '3.5.5b', title: 'The new interface, now on 3.5.5 (beta)', notes: [
+      'The new interface is now an edition of the main game: the same game as 3.5.5 with a different interface, published beside it to hear what players think. Its version is the main game\'s with a b, and every later release comes out in both.',
+      'It was first published as 3.6 beta. Careers saved there carry on here.',
+      'Everything in 3.5.5 is in (below). In the Garage\'s exploded view every unit is a layer of the new drawings, and Finance opens on the Sponsors tab whenever an offer or a renewal is waiting.'
+    ] },
+    { v: '3.5.5', title: 'Robots that look the part', notes: [
+      'Every robot picture is redrawn. A robot is now put together from what a real one is made of: box tube with its hole pattern, pocketed plate, polycarbonate, belts, compliant wheels, gas springs and hooks, in the proportions of a real robot. The pictures are drawn twice as sharp.',
+      'Every season has its own designs: each concept has its own drawing for that game. A 2018 climber is a hook on a strap with forks for a partner, a 2019 one is a pair of stilts with ramps, a 2022 one is a telescoping arm. A low-bar or trench robot stands at its real height, and the low seasons are drawn larger.',
+      'In a match the robots show the same designs from above, and they move: the intake folds out while a robot is collecting, lifts and arms reach out to place, and climbers, forks and ramps come out in the endgame. The wheels sit inside the frame, and the signal light is a smaller bulb with the same glow.',
+      'In the seasons before AprilTags, a robot with vision switches on its green ring light while it aims.',
+      'A robot without a turret turns its whole chassis to face what it shoots at, and a shot leaves from the shooter, wherever that sits on the robot.',
+      'Your robot can wear any colour: the Garage has a Robot look card with the robot\'s colour and its accent, red or blue bumpers for your pictures with the number in the middle or at the side, and the robot from above playing its moves. The team\'s colour on the pages stays as it is.',
+      'Some rivals paint their robots, most of the elite teams among them, and a team keeps its colour from season to season: in matches, in scouting and in the reveals. The others run bare aluminium.',
+      'Fixed: the 2025 Coral and Barge bonuses asked for the Championship\'s numbers at every event (7 coral on a level, 16 Barge points). Regionals and districts now ask for 5 and 14, which is what robots chasing the bonus already aimed for. The same in 2023: 5 links (4 with Coopertition) until the Championship, 6 (5) there.',
+      'Hoppers hold what real ones did: 20, 45 or 75 fuel in 2026 (a low-profile frame keeps 70% of that, not 60%) and 50, 45 or 90 balls in 2017. The fields already held the real numbers of balls. Scores in 2026 are about a quarter higher, and the Energized bonus comes a little more often.',
+      'The fantasy seasons borrow these parts.'
+    ] },
+    { v: '3.5.4b', title: 'A new interface (first published as 3.6 beta)', notes: [
       'The sidebar groups the pages: Home, Robot, Team, Program and Season. The group you are in lists its pages; hover another for a shortcut to its pages.',
       'Tiles and hover cards: Headquarters shows the main numbers, and the details appear when you hover a tile. Long explanations on the other pages moved into hover cards too (a dotted underline).',
       'Side windows: one thing at a time, such as a unit in the Garage, without leaving the page. Esc or ✕ closes them.',

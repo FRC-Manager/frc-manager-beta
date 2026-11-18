@@ -2,8 +2,8 @@
 
 A lightweight 2D management game about running a *FIRST* Robotics Competition team across the 2016–2026 seasons, inspired by the F1 Manager series. You don't drive the robot: you build the program behind it.
 
-> **This is the 3.6 beta:** a new interface. Pages in five groups, tiles and hover cards for the details, side windows for a unit or a message, tabs on the long pages, and an exploded view of the robot in the Garage.
-> **▶ [Play the beta in your browser](https://frc-manager.github.io/frc-manager-beta/)**. The beta keeps its own saves and never touches the stable game's. The stable release, 3.5.4, is at [frc-manager.github.io/frc-manager](https://frc-manager.github.io/frc-manager/) ([repository](https://github.com/FRC-Manager/frc-manager)).
+> **This is the new-interface beta (3.5.5b):** the same game as 3.5.5 with a different interface, published beside it to hear what players think. Its version is the main game's with a b, and every release comes out in both. Pages in five groups, tiles and hover cards for the details, side windows for a unit or a message, tabs on the long pages, and an exploded view of the robot in the Garage.
+> **▶ [Play the beta in your browser](https://frc-manager.github.io/frc-manager-beta/)**. The beta keeps its own saves and never touches the stable game's. The main game, 3.5.5, is at [frc-manager.github.io/frc-manager](https://frc-manager.github.io/frc-manager/) ([repository](https://github.com/FRC-Manager/frc-manager)).
 
 **▶ [Play FRC Manager in your browser](https://frc-manager.github.io/frc-manager-beta/)** — no download needed. Your saves stay in your browser.
 
@@ -15,7 +15,7 @@ A lightweight 2D management game about running a *FIRST* Robotics Competition te
 2. Pick **New Career** (up to ten seasons, 2016 to 2026: start in any year, in real or random order or with your own list of games, as a regional or a district team) or **Single Season Challenge** (one game, real or fantasy, plus a scenario, graded S–D).
 3. Each turn is a month in the offseason and a week during the season. Make decisions, then press **Continue**.
 
-Current version: **3.6**, a beta. The main menu's **What's new** page has the version notes. The previous release, 2.5, is still playable at [txtaylor2997.github.io/frc-manager](https://txtaylor2997.github.io/frc-manager/). Saves are kept per site: to bring a career over from 2.5, use **☰ → Export save** there and **Load / import** here.
+Current version: **3.5.5b**, the new-interface beta of 3.5.5. The main menu's **What's new** page has the version notes. The previous release, 2.5, is still playable at [txtaylor2997.github.io/frc-manager](https://txtaylor2997.github.io/frc-manager/). Saves are kept per site: to bring a career over from 2.5, use **☰ → Export save** there and **Load / import** here.
 
 The original design is in [GAME_DESIGN.md](GAME_DESIGN.md), and the plan for the ten-season career and the district model in [V3_PLAN.md](V3_PLAN.md). In the game, a short guided tour runs once per game, at your first Kickoff, first event and first match (switch it off any time), every screen has a **?** button, and **How to play** (main menu) has the full guide by topic and a glossary.
 
@@ -118,9 +118,12 @@ js/systems/scouting.js the world map (areas, districts, cities, where teams and 
 js/systems/shop.js    facilities and workshop space, batteries, shop incidents, opportunities
 js/systems/parts.js   parts inventory, vendor releases, stock, allocation, wear, game elements
 js/systems/news.js    news, team chatter and inbox replies
-js/render/draw.js     2D fields, robots (top-down and side profile), effects
+js/render/draw.js     2D fields, the robot chassis from above, effects
 js/render/draw-classic.js   the 2016–2020 fields and game pieces
 js/render/draw-fantasy.js   the fantasy games' fields and game pieces
+js/render/draw-robot.js     the drawing kit for robots from the side (tube, plate, belts, wheels) and shared parts
+js/render/draw-robot-seasons.js   every season's robots from the side, one recipe a season
+js/render/draw-robot-top.js   every season's robots from above, as they move in a match
 js/ui/ui.js           main screens (HQ, Garage, Design Office, Team, Workshop, Finance, Calendar, History) and pop-ups
 js/ui/screens-event.js   events: practice, matches, bracket, Championship pages, celebrations
 js/ui/screens-menu.js    main menu, new game, settings, version notes, season review
@@ -134,6 +137,7 @@ tools/build-single-file.ps1   builds dist/FRC-Manager.html
 tools/trailer/        60-second reveal trailer generator (open index.html, press Render MP4; index.html?vertical for 9:16)
 tools/match-tester/   match tester: any game, six random robots on random strategies, routes and tasks drawn (open index.html)
 tools/world-viewer/   world viewer: simulates a decade and shows the world map and every area's numbers against the real ones, year by year (open index.html)
+tools/robot-viewer/   robot viewer: build any robot of any season and see it from the side and in a match, with the animation under sliders; saves pictures, and the address keeps the build (open index.html)
 ```
 
 ## Tuning
