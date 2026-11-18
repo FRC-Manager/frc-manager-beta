@@ -2,17 +2,20 @@
 
 A lightweight 2D management game about running a *FIRST* Robotics Competition team across the 2016–2026 seasons, inspired by the F1 Manager series. You don't drive the robot: you build the program behind it.
 
-**▶ [Play FRC Manager in your browser](https://frc-manager.github.io/frc-manager/)** — no download needed. Your saves stay in your browser.
+> **This is the 3.6 beta:** a new interface. Pages in five groups, tiles and hover cards for the details, side windows for a unit or a message, tabs on the long pages, and an exploded view of the robot in the Garage.
+> **▶ [Play the beta in your browser](https://frc-manager.github.io/frc-manager-beta/)**. The beta keeps its own saves and never touches the stable game's. The stable release, 3.5.4, is at [frc-manager.github.io/frc-manager](https://frc-manager.github.io/frc-manager/) ([repository](https://github.com/FRC-Manager/frc-manager)).
+
+**▶ [Play FRC Manager in your browser](https://frc-manager.github.io/frc-manager-beta/)** — no download needed. Your saves stay in your browser.
 
 > Unofficial fan-made game. Not affiliated with or endorsed by *FIRST*®, Formula 1® or Frontier Developments. Sponsors, regionals, offseason events and opponent teams are fictional or randomly generated.
 
 ## How to play
 
-1. Play [online](https://frc-manager.github.io/frc-manager/), or download the project and open `index.html` in Chrome, Edge or Firefox (double-click it). There is nothing to install, and the downloaded copy works offline.
+1. Play [online](https://frc-manager.github.io/frc-manager-beta/), or download the project and open `index.html` in Chrome, Edge or Firefox (double-click it). There is nothing to install, and the downloaded copy works offline.
 2. Pick **New Career** (up to ten seasons, 2016 to 2026: start in any year, in real or random order or with your own list of games, as a regional or a district team) or **Single Season Challenge** (one game, real or fantasy, plus a scenario, graded S–D).
 3. Each turn is a month in the offseason and a week during the season. Make decisions, then press **Continue**.
 
-Current version: **3.5.4**. The main menu's **What's new** page has the version notes. The previous release, 2.5, is still playable at [txtaylor2997.github.io/frc-manager](https://txtaylor2997.github.io/frc-manager/). Saves are kept per site: to bring a career over from 2.5, use **☰ → Export save** there and **Load / import** here.
+Current version: **3.6**, a beta. The main menu's **What's new** page has the version notes. The previous release, 2.5, is still playable at [txtaylor2997.github.io/frc-manager](https://txtaylor2997.github.io/frc-manager/). Saves are kept per site: to bring a career over from 2.5, use **☰ → Export save** there and **Load / import** here.
 
 The original design is in [GAME_DESIGN.md](GAME_DESIGN.md), and the plan for the ten-season career and the district model in [V3_PLAN.md](V3_PLAN.md). In the game, a short guided tour runs once per game, at your first Kickoff, first event and first match (switch it off any time), every screen has a **?** button, and **How to play** (main menu) has the full guide by topic and a glossary.
 

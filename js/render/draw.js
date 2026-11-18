@@ -538,13 +538,16 @@
   // ------------------------------------------------------------------
   // Robot — side profile (Garage)
   // ------------------------------------------------------------------
-  Rd.robotSide = function (ctx, W, H, look, a, team) {
-    const lk = look || {};
+  // opts.only (3.6): draw only these sections, for the Garage's exploded view: 'floor', 'base' (wheels, frame, bumper,
+  // electronics, lights), 'manip', 'shooter', 'hopper', 'indexer', 'intake', 'climber', 'algae', 'vision'
+  Rd.robotSide = function (ctx, W, H, look, a, team, opts) {
+    const lk = look || {}, only = opts && opts.only, on = k => !only || only.includes(k);
     ctx.clearRect(0, 0, W, H);
     const gy = H - 24, s = Math.min(W / 2.0, (H - 30) / 1.45);
     // floor
-    ctx.fillStyle = '#20252b'; ctx.fillRect(0, gy, W, 24);
-    ctx.strokeStyle = 'rgba(255,255,255,0.15)'; ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(W, gy); ctx.stroke();
+    if (on('floor')) { ctx.fillStyle = '#20252b'; ctx.fillRect(0, gy, W, 24);
+      ctx.strokeStyle = 'rgba(255,255,255,0.15)'; ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(W, gy); ctx.stroke(); }
+    ctx.save(); if (!on('base')) { ctx.globalAlpha = 0; } // the base is drawn invisibly when it is not wanted: its geometry still places the rest
     const cx = W / 2, fw = 0.9 * s, x0 = cx - fw / 2;
     const ver = lk.ver || 1, frame = ver >= 2 ? shade(lk.c1 || '#7a8591', -0.1) : '#8a949e';
     const low = lk.frame === 'low';
@@ -575,8 +578,11 @@
     // electronics belly pan
     ctx.fillStyle = '#2b3036'; ctx.fillRect(x0 + 0.08 * s, top - 0.08 * s, fw * 0.5, 0.08 * s);
     ctx.fillStyle = '#e5484d'; ctx.fillRect(x0 + 0.12 * s, top - 0.06 * s, 0.05 * s, 0.04 * s);
+    if (on('base') && lk.ver >= 3) { ctx.fillStyle = lk.c2 || '#4cff8a'; ctx.fillRect(x0, fy - 0.07 * s, fw, 0.015 * s); } // LEDs
+    ctx.restore();
     // manipulator / elevator
     const mp = lk.manip;
+    ctx.save(); if (!on('manip')) ctx.globalAlpha = 0;
     ctx.strokeStyle = '#d6dce2'; ctx.fillStyle = '#c3cad1';
     if (mp === 'elevator' || mp === 'elevwrist' || mp === 'ampbar') {
       const eh = (mp === 'ampbar' ? 0.35 : low ? 0.5 : 1.1) * s;
@@ -613,9 +619,10 @@
       ctx.restore();
       ctx.beginPath(); ctx.arc(px, py, 0.035 * s, 0, 7); ctx.fillStyle = lk.c2 || '#ffcf4a'; ctx.fill();
     }
+    ctx.restore();
     // shooter
     const sh = lk.shooter;
-    if (sh) {
+    if (sh && on('shooter')) {
       const sy = top - (low ? 0.12 : 0.28) * s, sx = cx - 0.15 * s;
       ctx.fillStyle = '#2f353c';
       if (sh === 'turret' || sh === 'rotor') { if (sh === 'rotor') { ctx.save(); ctx.strokeStyle = lk.c2 || '#ffcf4a'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(sx, sy + 0.07 * s, 0.09 * s, 0, Math.PI); ctx.stroke(); ctx.restore(); } ctx.fillRect(sx - 0.18 * s, sy + 0.04 * s, 0.36 * s, 0.06 * s); ctx.beginPath(); ctx.arc(sx, sy, 0.12 * s, Math.PI, 0); ctx.fill(); ctx.strokeStyle = lk.c2 || '#ffcf4a'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(sx, sy, 0.12 * s, Math.PI * 1.1, Math.PI * 1.7); ctx.stroke(); }
@@ -632,12 +639,12 @@
     }
     // hopper
     // (3.5.3) an empty hopper: walls and a mesh, no fuel in it (it was drawn half full)
-    if (lk.hopper) { const hh = Math.min(0.5, 0.15 + lk.hopper / 120) * s * (low ? 0.6 : 1), hx = x0 + 0.06 * s, hw = fw * 0.55; ctx.fillStyle = 'rgba(0,0,0,0.18)'; ctx.fillRect(hx, top - hh, hw, hh); ctx.strokeStyle = 'rgba(170,179,188,0.45)'; ctx.lineWidth = 1; for (let i = 1; i < 6; i++) { ctx.beginPath(); ctx.moveTo(hx + i * hw / 6, top - hh); ctx.lineTo(hx + i * hw / 6, top); ctx.stroke(); } ctx.beginPath(); ctx.moveTo(hx, top - hh / 2); ctx.lineTo(hx + hw, top - hh / 2); ctx.stroke(); ctx.strokeStyle = '#aab3bc'; ctx.lineWidth = 2; ctx.strokeRect(hx, top - hh, hw, hh); }
+    if (lk.hopper && on('hopper')) { const hh = Math.min(0.5, 0.15 + lk.hopper / 120) * s * (low ? 0.6 : 1), hx = x0 + 0.06 * s, hw = fw * 0.55; ctx.fillStyle = 'rgba(0,0,0,0.18)'; ctx.fillRect(hx, top - hh, hw, hh); ctx.strokeStyle = 'rgba(170,179,188,0.45)'; ctx.lineWidth = 1; for (let i = 1; i < 6; i++) { ctx.beginPath(); ctx.moveTo(hx + i * hw / 6, top - hh); ctx.lineTo(hx + i * hw / 6, top); ctx.stroke(); } ctx.beginPath(); ctx.moveTo(hx, top - hh / 2); ctx.lineTo(hx + hw, top - hh / 2); ctx.stroke(); ctx.strokeStyle = '#aab3bc'; ctx.lineWidth = 2; ctx.strokeRect(hx, top - hh, hw, hh); }
     // (3.5.3) the revolver: a drum in front of the shooter, ribbed, with a team-colour band
-    if (lk.indexer === 'revolver') { const dx = cx + 0.12 * s, dw = 0.3 * s, dh = 0.13 * s; ctx.fillStyle = '#2f353c'; ctx.fillRect(dx, top - dh, dw, dh); ctx.strokeStyle = '#69737d'; ctx.lineWidth = 1; for (let i = 1; i < 5; i++) { ctx.beginPath(); ctx.moveTo(dx + i * dw / 5, top - dh); ctx.lineTo(dx + i * dw / 5, top); ctx.stroke(); } ctx.fillStyle = lk.c2 || '#ffcf4a'; ctx.fillRect(dx, top - dh, dw, 0.018 * s); }
+    if (lk.indexer === 'revolver' && on('indexer')) { const dx = cx + 0.12 * s, dw = 0.3 * s, dh = 0.13 * s; ctx.fillStyle = '#2f353c'; ctx.fillRect(dx, top - dh, dw, dh); ctx.strokeStyle = '#69737d'; ctx.lineWidth = 1; for (let i = 1; i < 5; i++) { ctx.beginPath(); ctx.moveTo(dx + i * dw / 5, top - dh); ctx.lineTo(dx + i * dw / 5, top); ctx.stroke(); } ctx.fillStyle = lk.c2 || '#ffcf4a'; ctx.fillRect(dx, top - dh, dw, 0.018 * s); }
     // intake
     const it = lk.intake;
-    if (it && it !== 'none') {
+    if (it && it !== 'none' && on('intake')) {
       const ix = it === 'dual' ? [x0 - 0.08 * s, x0 + fw + 0.08 * s] : [x0 + fw + 0.08 * s];
       ix.forEach(xx => { ctx.beginPath(); ctx.arc(xx, fy + (it === 'under' ? 0.06 : -0.04) * s, (it === 'wide' ? 0.06 : 0.05) * s, 0, 7); ctx.fillStyle = '#d9dee3'; ctx.fill(); });
       if (it === 'funnel') { ctx.strokeStyle = '#d9dee3'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(x0 + 0.1 * s, top - 0.55 * s); ctx.lineTo(x0 + 0.25 * s, top - 0.2 * s); ctx.lineTo(x0 + 0.4 * s, top - 0.55 * s); ctx.stroke(); }
@@ -645,7 +652,7 @@
     }
     // climber
     const cl = lk.climber;
-    if (cl && cl !== 'none') {
+    if (cl && cl !== 'none' && on('climber')) {
       const ch = { hook: 0.55, hook2: 0.75, arms: 0.95, triple: 0.95 }[cl] * s * (low ? 0.75 : 1), clx = x0 + 0.06 * s;
       ctx.fillStyle = '#ffcf4a'; ctx.fillRect(clx, top - ch, 0.035 * s, ch);
       ctx.strokeStyle = '#ffcf4a'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(clx + 0.06 * s, top - ch, 0.05 * s, Math.PI, Math.PI * 2.1); ctx.stroke();
@@ -654,7 +661,7 @@
     }
     // algae
     // (3.5.3) the algae mechanism without an algae in it: a pivot, an arm and two rollers (high for the net, low for the processor)
-    if (lk.algae === 'net' || lk.algae === 'proc') {
+    if ((lk.algae === 'net' || lk.algae === 'proc') && on('algae')) {
       const net = lk.algae === 'net', px = x0 + fw * 0.62, py = top - 0.04 * s, ang = net ? -1.0 : -0.35, L = (net ? 0.34 : 0.24) * s;
       ctx.save(); ctx.translate(px, py); ctx.rotate(ang);
       ctx.fillStyle = '#4a525b'; ctx.fillRect(0, -0.025 * s, L, 0.05 * s);
@@ -662,10 +669,8 @@
       ctx.restore(); ctx.beginPath(); ctx.arc(px, py, 0.025 * s, 0, 7); ctx.fillStyle = '#8d97a1'; ctx.fill();
     }
     // vision camera
-    if (lk.vision) { ctx.fillStyle = '#111'; ctx.fillRect(cx + 0.25 * s, top - 0.12 * s, 0.06 * s, 0.05 * s); ctx.fillStyle = '#4cff8a'; ctx.fillRect(cx + 0.31 * s, top - 0.11 * s, 0.015 * s, 0.03 * s); if (lk.vision > 1) { ctx.fillStyle = '#111'; ctx.fillRect(x0 + 0.1 * s, top - 0.16 * s, 0.06 * s, 0.05 * s); } }
-    // LEDs
-    if (ver >= 3) { ctx.fillStyle = lk.c2 || '#4cff8a'; ctx.fillRect(x0, fy - 0.07 * s, fw, 0.015 * s); }
-    if (low) { ctx.strokeStyle = 'rgba(255,255,255,0.25)'; ctx.setLineDash([5, 5]); ctx.beginPath(); ctx.moveTo(0, gy - 0.6 * s); ctx.lineTo(W, gy - 0.6 * s); ctx.stroke(); ctx.setLineDash([]); ctx.fillStyle = 'rgba(255,255,255,0.4)'; ctx.font = '10px system-ui'; ctx.textAlign = 'left'; ctx.fillText(lk.year === 2016 ? 'low bar' : 'trench clearance', 6, gy - 0.6 * s - 7); }
+    if (lk.vision && on('vision')) { ctx.fillStyle = '#111'; ctx.fillRect(cx + 0.25 * s, top - 0.12 * s, 0.06 * s, 0.05 * s); ctx.fillStyle = '#4cff8a'; ctx.fillRect(cx + 0.31 * s, top - 0.11 * s, 0.015 * s, 0.03 * s); if (lk.vision > 1) { ctx.fillStyle = '#111'; ctx.fillRect(x0 + 0.1 * s, top - 0.16 * s, 0.06 * s, 0.05 * s); } }
+    if (low && on('floor')) { ctx.strokeStyle = 'rgba(255,255,255,0.25)'; ctx.setLineDash([5, 5]); ctx.beginPath(); ctx.moveTo(0, gy - 0.6 * s); ctx.lineTo(W, gy - 0.6 * s); ctx.stroke(); ctx.setLineDash([]); ctx.fillStyle = 'rgba(255,255,255,0.4)'; ctx.font = '10px system-ui'; ctx.textAlign = 'left'; ctx.fillText(lk.year === 2016 ? 'low bar' : 'trench clearance', 6, gy - 0.6 * s - 7); }
   };
 
   // ------------------------------------------------------------------

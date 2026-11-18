@@ -261,6 +261,16 @@
   // =====================================================================
   // Newest first. Keep G.VERSION (core.js) equal to the first entry.
   G.RELEASES = [
+    { v: '3.6', title: 'A new interface (beta)', notes: [
+      'The sidebar groups the pages: Home, Robot, Team, Program and Season. The group you are in lists its pages; hover another for a shortcut to its pages.',
+      'Tiles and hover cards: Headquarters shows the main numbers, and the details appear when you hover a tile. Long explanations on the other pages moved into hover cards too (a dotted underline).',
+      'Side windows: one thing at a time, such as a unit in the Garage, without leaving the page. Esc or ✕ closes them.',
+      'The Garage shows one robot at a time as an exploded view: click a unit for its stats, its robot parts and what can be done with it. Storage and the competition robot\'s full stats have their own tabs.',
+      'The Inbox has filters (Needs you, Unread, Emails) and a reading pane beside the list.',
+      'Tabs on the long pages (Design Office, Team, Mentors, Finance, Calendar), and the buttons you need now and then in a ⋯ menu.',
+      'Small animations: pages rise in, numbers count to their new value, bars grow. A system setting for reduced motion turns them off.',
+      'This is a beta: it keeps its own saves, apart from the stable game\'s.'
+    ] },
     { v: '3.5.4', title: 'Testing at home, strategy read, 2026 shots', notes: [
       'Development at home counts less on a robot whose CAN bus is overloaded (85%) or that carries cameras without a network switch (90%), on the competition robot as well as the second one. With only one robot all testing is on it. The Design Office and the Garage say when either applies.',
       'Strategy read is shown as a number from 0 to 100 at Headquarters, on the Team page (with what it is made of) and at events, with what it does in this season\'s game.',
