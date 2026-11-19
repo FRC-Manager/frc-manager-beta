@@ -174,12 +174,15 @@
       });
       const scale = () => { const w = cvs[0] ? cvs[0].getBoundingClientRect().width : W; if (w > 0) box.style.setProperty('--xs', (w / W).toFixed(4)); };
       scale(); if (window.ResizeObserver) new ResizeObserver(scale).observe(box);
-      requestAnimationFrame(() => requestAnimationFrame(() => box.classList.add(UI.st.assembled ? 'asm' : 'exp')));
+      // (3.5.6b) the robot stands assembled and comes apart while the pointer is over it; "Keep exploded" (UI.st.xpPin) holds it open
+      let over = false; const open = on => { over = on; on = on || !!UI.st.xpPin; box.classList.toggle('exp', on); box.classList.toggle('asm', !on); };
+      requestAnimationFrame(() => requestAnimationFrame(() => open(over)));
+      box.addEventListener('mouseenter', () => open(true)); box.addEventListener('focusin', () => open(true)); box.addEventListener('touchstart', () => open(true), { passive: true });
       // hover and click on the drawn parts: the topmost layer with paint under the pointer
       const hit = e => { for (let i = cvs.length - 1; i >= 0; i--) { const cv = cvs[i], r = cv.getBoundingClientRect(); const x = Math.floor((e.clientX - r.left) * W / r.width), y = Math.floor((e.clientY - r.top) * H / r.height); if (x < 0 || y < 0 || x >= W || y >= H) continue; if (cv.getContext('2d').getImageData(x, y, 1, 1).data[3] > 24) return i; } return -1; };
       let last = -1;
       box.addEventListener('mousemove', e => { const i = hit(e); if (i === last) return; last = i; cvs.forEach((cv, j) => cv.classList.toggle('hl', j === i)); box.querySelectorAll('.xlab').forEach((lb, j) => lb.classList.toggle('hl', j === i)); box.style.cursor = i >= 0 ? 'pointer' : ''; });
-      box.addEventListener('mouseleave', () => { last = -1; cvs.forEach(cv => cv.classList.remove('hl')); box.querySelectorAll('.xlab').forEach(lb => lb.classList.remove('hl')); });
+      box.addEventListener('mouseleave', () => { last = -1; cvs.forEach(cv => cv.classList.remove('hl')); box.querySelectorAll('.xlab').forEach(lb => lb.classList.remove('hl')); open(false); });
       box.addEventListener('click', e => { if (e.target.closest('.xlab')) return; const i = hit(e); if (i >= 0) UI.openWin('unit', bi + ':' + layers[i].k); });
     });
     const lab = L => { const u = L.k === 'soft' ? null : R.bots[bi].subs[L.k], c = u && u.ver ? G.Seasons.concept(year, L.k, u.concept) : null;
@@ -187,7 +190,7 @@
     return '<div class="xplode" id="' + id + '" style="--xw:' + W + '">' + layers.map((L, i) => '<canvas class="xl" width="' + W + '" height="' + H + '" style="z-index:' + (i + 1) + '"></canvas>').join('') + layers.map(lab).join('') +
       '<div class="xfloor"></div></div>';
   };
-  UI.A.xpToggle = () => { UI.st.assembled = !UI.st.assembled; document.querySelectorAll('.xplode').forEach(b => { b.classList.toggle('asm', !!UI.st.assembled); b.classList.toggle('exp', !UI.st.assembled); }); document.querySelectorAll('[data-act="xpToggle"]').forEach(b => { b.textContent = UI.st.assembled ? 'Explode' : 'Assemble'; }); };
+  UI.A.xpToggle = () => { UI.st.xpPin = !UI.st.xpPin; document.querySelectorAll('.xplode').forEach(b => { b.classList.toggle('asm', !UI.st.xpPin); b.classList.toggle('exp', !!UI.st.xpPin); }); document.querySelectorAll('[data-act="xpToggle"]').forEach(b => { b.textContent = UI.st.xpPin ? 'Explode on hover' : 'Keep exploded'; }); };
 })();
 // (3.6) the tabs of pages split up in 3.6
 G.UI.A.desTab = t => { G.UI.st.desTab = t; G.UI.render(); };

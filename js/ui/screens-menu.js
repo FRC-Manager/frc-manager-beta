@@ -261,6 +261,21 @@
   // =====================================================================
   // Newest first. Keep G.VERSION (core.js) equal to the first entry.
   G.RELEASES = [
+    { v: '3.5.6b', title: 'The new interface on 3.5.6 (beta)', notes: [
+      'Everything in 3.5.6 is in (below): the driving, the new designs, six robots from the side before a match.',
+      'The Garage\'s robot now stands assembled and comes apart when the pointer is over it. Keep exploded holds it open.',
+      'Fixed: a message in the Inbox\'s reading pane keeps its paragraphs, and an email shows its header and its letter as it does in the main game.'
+    ] },
+    { v: '3.5.6', title: 'Driving like the real thing', notes: [
+      'In a watched match a robot turns the end its scorer is on to the goal before it places, and its intake to the station it loads from. Swerve and mecanum drives turn while they travel and spin off a defender. Tank drives swing through their corners, back up for a short hop, turn on the spot before a run the other way, and back off a defender before they turn. Results are the same as before.',
+      'New designs. 2018: a double-jointed arm, and an elite design, the flipping roller claw, which places behind the robot as well as in front. 2019: a suction climber that hangs beside HAB Level 3 and leaves the platform to a partner. 2020: a long-range shooter with one big wheel that shoots from behind the Trench Run (tall frame only). 2017: an elite fuel system, the dual intake + turret shooter, which sweeps fuel up faster and shoots from well outside the Key.',
+      'The 2024 turret shooter is now an elite design, and a smaller gain over the pivot than it was: a note shooter is heavy, so its turret turns slowly and is no more accurate. Elite designs are now the last of every list.',
+      'The 2023 "Elevator + wrist" is now the Elevator + escalator, drawn with its three telescoping stages. The 2026 wide dumper throws over its back, away from its intake, and its cameras look that way.',
+      'The pre-match page shows all six robots from the side. Rival teams put the number on their bumpers in the middle or at the side, each team its own way.',
+      'The Super pit tires the team a little less at an event. Your own FTC teams take a few mentor hours a week in the offseason. Students paying their own way can be ticked in the window that sends the team to an event.',
+      'The research list and the Tech Knowledge table have banded rows, and every knowledge area has a colour of its own in both, so the one you want is quicker to find.',
+      'Fixed: an international partner signed by Auto-pick best now sends its letter.'
+    ] },
     { v: '3.5.5b', title: 'The new interface, now on 3.5.5 (beta)', notes: [
       'The new interface is now an edition of the main game: the same game as 3.5.5 with a different interface, published beside it to hear what players think. Its version is the main game\'s with a b, and every later release comes out in both.',
       'It was first published as 3.6 beta. Careers saved there carry on here.',
