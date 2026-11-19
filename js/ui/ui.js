@@ -32,6 +32,10 @@
     if (scr.full) app.innerHTML = UI.era(body);
     else app.innerHTML = UI.era(topbar() + '<div class="shell">' + sidebar(cur) + '<div class="main' + (entering ? ' enter' : '') + '" id="main">' + (UI.subnav && G.S && !G.S.event ? UI.subnav(G.S, cur) : '') + body + '</div>' + (UI.winHtml && G.S ? UI.winHtml(G.S) : '') + '</div>');
     UI.shown = UI.screen;
+    // (3.5.7b) the rise-in is over in under a second: the class goes then. Left on, everything put on the page later rose
+    // in again (the bars beside a match grew from nothing five times a second), and each animated block kept a layer
+    // of its own, so a menu opened from one block was painted under the next
+    if (entering) { clearTimeout(UI.enterT); UI.enterT = setTimeout(() => { const el = document.getElementById('main'); if (el) el.classList.remove('enter'); }, 950); }
     if (UI.countUp) UI.countUp();
     if (keep) { const mn = scroller(); if (mn && keep.m) mn.scrollTop = keep.m; if (keep.w) window.scrollTo(0, keep.w); } // a click that redraws the page you are on keeps your place
     UI.jobs.forEach(f => { try { f(); } catch (e) { console.error(e); } });
@@ -1066,10 +1070,11 @@
     if (G.Career.bagged(S)) o += '<div class="warnbox mb"><b>Stop Build Day:</b> the competition robot is in the bag. ' + (G.Career.bagK(S) < 1 ? 'Fabrication projects run at ' + Math.round(G.Career.bagK(S) * 100) + '% speed (a second robot removes the penalty)' : 'Your second robot keeps fabrication projects at full speed') + '. New units and upgrades are packed when they are finished and fitted on practice day at your next event (Install Upgrade)' + (G.Robot.held(S).length ? ': <b>' + G.Robot.held(S).length + ' packed now</b>' : '') + '. Software and program projects are not affected.</div>';
     // (3.6) tabs; a line above them says what is running
     const dTab = UI.st.desTab && (UI.st.desTab !== 'robot' || inSeason) ? UI.st.desTab : inSeason ? 'robot' : G.Career.researchOpen(S) ? 'research' : 'program';
+    // (3.5.7b) this week's hours stay in view above the tabs: the short form, and the whole panel on Projects & hours
+    o += '<div class="des-hours">' + UI.card(UI.it('clock', 'Team hours this ' + (S.phase === 'off' ? 'month' : 'week')), UI.hoursPanel(S, dTab !== 'projects') + (dTab === 'projects' ? UI.fatigueLine(S) : '')) + '</div>';
     { const su = G.Robot.slotUsed(S), sm = G.Robot.slots(S), idle = Math.round(C.hoursPlan(S).idle || 0); o += '<div class="row wrap sm mb des-sum">' + UI.tag(su + '/' + sm + ' project slots', su >= sm ? 'warn' : '') + (S.projects.length ? S.projects.slice(0, 3).map(p => '<span class="muted">' + h(p.name) + ' ' + Math.round(100 * p.done / Math.max(1, p.need)) + '%</span>').join('<span class="dim">·</span>') + (S.projects.length > 3 ? '<span class="muted">+' + (S.projects.length - 3) + '</span>' : '') : '<span class="muted">No projects running.</span>') + '<span class="sp"></span>' + (idle > 0 ? '<span class="' + (idle > 20 ? 'warn' : 'muted') + '">' + idle + ' h idle</span>' : '') + '</div>'; }
     o += UI.tabs(dTab, (inSeason ? [['robot', 'Robot design', 'design']] : []).concat([['projects', 'Projects & hours', 'clock'], ['program', 'Program', 'trophy'], ['research', 'Research', 'atom']]), 'desTab');
     if (dTab === 'projects' && (S.phase === 'build' || S.phase === 'kickoff')) o += '<div class="row wrap mb"><label class="row sm"><input type="checkbox" data-chg="overtime" ' + (S.overtime ? 'checked' : '') + '> Overtime this week (+30% hours, −6 morale, ' + U.money(200) + ')</label></div>';
-    if (dTab === 'projects') o += UI.card(UI.it('clock', 'Team hours this ' + (S.phase === 'off' ? 'month' : 'week')), UI.hoursPanel(S) + UI.fatigueLine(S));
     if (dTab === 'projects') o += '<div class="mt">' + UI.card('Testing hours ' + (function () { const th = C.testHours(S), pf = G.Shop.lvl(S, 'pfield') > 0, r2 = G.Robot.secondRuns(S); return th.unlocked ? UI.tag('from ' + [pf ? 'the practice field' : '', r2 ? (G.Robot.secondShare(S) > 0 ? 'the second robot' : 'the test chassis') : ''].filter(Boolean).join(' and '), 'info') : UI.tag('from a test or second robot and a practice field'); })(), UI.testPanel(S)) + '</div>';
     // weekly suggestion
     const sg = G.Robot.suggest(S);
@@ -1381,7 +1386,7 @@
   UI.A.conceptModal = function (subId) {
     const S = G.S, year = S.robot.year, sd = G.Seasons.sub(year, subId), cur = G.Robot.des(S.robot, subId);
     UI.st.modalFn = () => UI.A.conceptModal(subId);
-    let o = '<div class="xs muted">DEVELOPMENT DIRECTION</div><h2>' + h(sd.name) + '</h2>' + effortPicker();
+    let o = '<div class="xs muted">DEVELOPMENT DIRECTION</div><h2>' + h(sd.name) + '</h2>' + effortPicker() + '<div class="des-hours in-win">' + UI.hoursPanel(G.S, true) + '</div>'; // (3.5.7b) the hours you have, beside the hours each concept asks for
     if (cur.ver) o += '<div class="warnbox mb">Switching concept restarts this subsystem at v1 (v2 for a published design) on the competition robot (25% of the old work turns into knowledge XP). The old one goes to storage, and the drivers will need time to get used to the new one.</div>';
     o += '<div class="xs muted mb">The first one of any concept or version is a prototype (+' + Math.round((D.PROTO_COST - 1) * 100) + '% materials). More copies are cheaper: use Build copy afterwards.</div>';
     o += '<div class="col">' + sd.concepts.map(c => {
